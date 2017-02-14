@@ -32,9 +32,12 @@ func (w *Worker) Start() {
     go func() {
       for {
         // Add ourselves into the worker queue.
+        // Note: though `w.Work` is a channel, here we send this channel value to the channel's channel
         w.WorkerQueue <- w.Work
         
         select {
+        // Note: it is very different from previous line `w.WorkerQueue <- w.Work`
+        // here we receive value from `w.Work` channel, and assign it to `work`
         case work := <-w.Work:
           // Receive a work request.
           fmt.Printf("worker%d: Received work request, delaying for %f seconds\n", w.ID, work.Delay.Seconds())
