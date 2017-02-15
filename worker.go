@@ -8,7 +8,7 @@ import (
 // NewWorker creates, and returns a new Worker object. Its only argument
 // is a channel that the worker can add itself to whenever it is done its
 // work.
-func NewWorker(id int, workerQueue chan chan WorkRequest) Worker {
+func NewWorker(id int, workerQueue chan *Worker ) Worker {
   // Create, and return the worker.
   worker := Worker{
     ID:          id,
@@ -22,7 +22,7 @@ func NewWorker(id int, workerQueue chan chan WorkRequest) Worker {
 type Worker struct {
   ID          int
   Work        chan WorkRequest
-  WorkerQueue chan chan WorkRequest
+  WorkerQueue chan *Worker
   QuitChan    chan bool
 }
 
@@ -32,11 +32,9 @@ func (w *Worker) Start() {
     go func() {
       for {
         // Add ourselves into the worker queue.
-        // Note: though `w.Work` is a channel, here we send this channel value to the channel's channel
-        w.WorkerQueue <- w.Work
+        w.WorkerQueue <- w
         
         select {
-        // Note: it is very different from previous line `w.WorkerQueue <- w.Work`
         // here we receive value from `w.Work` channel, and assign it to `work`
         case work := <-w.Work:
           // Receive a work request.
